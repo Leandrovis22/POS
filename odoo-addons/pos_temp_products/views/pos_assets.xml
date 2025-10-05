@@ -1,65 +1,234 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <!-- Inject script directly into POS index template -->
-    <template id="pos_script_injection" inherit_id="point_of_sale.index" priority="100">
-        <xpath expr="//head" position="inside">
-            <script type="text/javascript">
-                <![CDATA[
-                console.log('🔥🔥🔥 POS SCRIPT LOADED VIA INDEX TEMPLATE 🔥🔥🔥');
-                
-                function waitForPOS() {
-                    console.log('🔥 Waiting for POS to be ready...');
-                    
-                    function injectButton() {
-                        console.log('🔥 Attempting button injection...');
-                        
-                        if (document.querySelector('.temp-product-btn')) {
-                            console.log('🔥 Button already exists');
-                            return true;
+                                html += '<button class="remove-row" data-index="' + i + '" style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 5px 8px; cursor: pointer;">×</button>';
+                                html += '</td>';
+                                html += '</tr>';
+                            }
+                            
+                            html += '</tbody></table>';
+                            html += '</div>';
+                            html += '<div style="margin-bottom: 20px;">';
+                            html += '<button id="add-row-btn" style="background: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; margin-right: 10px;"><i class="fa fa-plus"></i> Agregar fila</button>';
+                            html += '<small style="color: #6c757d;">Presiona Enter en el último campo de precio para agregar una nueva fila automáticamente</small>';
+                            html += '</div>';
+                            html += '<div style="text-align: right; border-top: 1px solid #dee2e6; padding-top: 15px;">';
+                            html += '<button id="cancel-btn" style="margin-right: 10px; padding: 8px 16px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>';
+                            html += '<button id="save-btn" style="padding: 8px 16px; border: none; background: #007bff; color: white; border-radius: 4px; cursor: pointer;">Guardar productos</button>';
+                            html += '</div>';
+                            
+                            modal.innerHTML = html;
+                            
+                            // Add event listeners
+                            attachEventListeners();
                         }
                         
-                        // Create button
-                        var button = document.createElement('button');
-                        button.className = 'temp-product-btn';
-                        button.innerHTML = '+ Producto Temporal';
-                        button.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 99999; background: #28a745; color: white; padding: 12px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px;';
+                        function attachEventListeners() {
+                            // Update row data on input
+                            var nameInputs = modal.querySelectorAll('.temp-name');
+                            var qtyInputs = modal.querySelectorAll('.temp-qty');
+                            var priceInputs = modal.querySelectorAll('.temp-price');
+                            
+                            for (var i = 0; i < nameInputs.length; i++) {
+                                nameInputs[i].oninput = function() {
+                                    var index = parseInt(this.getAttribute('data-index'));
+                                    rows[index].name = this.value;
+                                };
+                                
+                                qtyInputs[i].oninput = function() {
+                                    var index = parseInt(this.getAttribute('data-index'));
+                                    rows[index].qty = parseFloat(this.value) || 0;
+                                };
+                                
+                                priceInputs[i].oninput = function() {
+                                    var index = parseInt(this.getAttribute('data-index'));
+                                    rows[index].price = parseFloat(this.value) || 0;
+                                };
+                                
+                                // Enter key on price field adds new row
+                                priceInputs[i].onkeydown = function(e) {
+                                    if (e.key === 'Enter') {
+                                        var index = parseInt(this.getAttribute('data-index'));
+                                        if (index === rows.length - 1) {
+                                            addNewRow();
+                                        }
+                                    }
+                                };
+                            }
+                            
+                            // Remove row buttons
+                            var removeButtons = modal.querySelectorAll('.remove-row');
+                            for (var i = 0; i < removeButtons.length; i++) {
+                                removeButtons[i].onclick = function() {
+                                    var index = parseInt(this.getAttribute('data-index'));
+                                    if (rows.length > 1) {
+                                        rows.splice(index, 1);
+                                        renderModal();
+                                    }
+                                };
+                            }
+                            
+                            // Add row button
+                            document.getElementById('add-row-btn').onclick = addNewRow;
+                            
+                            // Action buttons
+                            document.getElementById('cancel-btn').onclick = closePopup;
+                            document.getElementById('save-btn').onclick = saveProducts;
+                            
+                            // Focus first empty name input
+                            var firstEmpty = modal.querySelector('.temp-name[value=""]');
+                            if (firstEmpty) {
+                                setTimeout(function() { firstEmpty.focus(); }, 100);
+                            }
+                        }
                         
-                        button.onclick = function() {
-                            console.log('🔥 BUTTON CLICKED!');
-                            showTempProductPopup();
+                        function addNewRow() {
+                            rows.push({name: '', qty: 1, price: 0});
+                            renderModal();
+                        }
+                        
+                        function closePopup() {
+                            document.body.removeChild(popup);
+                        }
+                        
+                        function saveProducts() {
+                            // Validate and filter rows
+                            var validRows = [];
+                            for (var i = 0; i < rows.length; i++) {
+                                var row = rows[i];
+                                if (row.name && row.name.trim() && row.qty > 0 && row.price >= 0) {
+                                    validRows.push({
+                                        name: row.name.trim(),
+                                        qty: row.qty,
+                                        price: row.price
+                                    });
+                                }
+                            }
+                            
+                            if (validRows.length === 0) {
+                                alert('Por favor agrega al menos un producto válido (con nombre, cantidad > 0 y precio >= 0)');
+                                return;
+                            }
+                            
+                            console.log('🔥 Saving products:', validRows);
+                            
+                            // Try to add to POS order
+                            addProductsToPOS(validRows);
+                            
+                            closePopup();
+                        }
+                        
+                        function addProductsToPOS(products) {
+                            console.log('🔥 Adding products to POS:', products);
+                            
+                            // Use the global function to get POS instance
+                            var pos = window.getPOSInstance();
+                            
+                            if (pos && pos.get_order) {
+                                console.log('🔥 Found POS instance, attempting to add products');
+                                
+                                var order = pos.get_order();
+                                if (!order) {
+                                    alert('No hay una orden activa en el POS');
+                                    return;
+                                }
+                                
+                                // Find the temp product
+                                var tempProduct = null;
+                                if (pos.db && pos.db.get_product_by_category) {
+                                    var allProducts = pos.db.get_product_by_category(0) || [];
+                                    tempProduct = allProducts.find(function(p) {
+                                        return p.display_name === 'Producto temporal POS' || p.name === 'Producto temporal POS';
+                                    });
+                                }
+                                
+                                if (!tempProduct) {
+                                    console.log('🔥 Temp product not found, trying alternative search');
+                                    // Try searching in all products
+                                    if (pos.db && pos.db.product_by_id) {
+                                        for (var id in pos.db.product_by_id) {
+                                            var p = pos.db.product_by_id[id];
+                                            if (p.name && p.name.includes('temporal')) {
+                                                tempProduct = p;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (!tempProduct) {
+                                    alert('❌ Producto temporal no encontrado en el POS.\n\nAsegúrate de que "Producto temporal POS" esté:\n1. Creado como producto tipo servicio\n2. Disponible en este POS\n3. La sesión esté actualizada');
+                                    return;
+                                }
+                                
+                                console.log('🔥 Found temp product:', tempProduct.name);
+                                
+                                // Add each product as a line
+                                var addedCount = 0;
+                                for (var i = 0; i < products.length; i++) {
+                                    var product = products[i];
+                                    
+                                    try {
+                                        var line = order.add_product(tempProduct, {
+                                            quantity: product.qty,
+                                            merge: false
+                                        });
+                                        
+                                        if (line) {
+                                            // Set custom price
+                                            line.set_unit_price(product.price);
+                                            
+                                            // Mark as temp line
+                                            line.temp_name = product.name;
+                                            line.is_temp_line = true;
+                                            
+                                            // Override product name for display
+                                            line.product.display_name = product.name;
+                                            
+                                            addedCount++;
+                                            console.log('🔥 Added line:', product.name, 'x', product.qty, '@', product.price);
+                                        }
+                                    } catch (error) {
+                                        console.error('🔥 Error adding product:', error);
+                                    }
+                                }
+                                
+                                if (addedCount > 0) {
+                                    alert('✅ ' + addedCount + ' productos temporales agregados exitosamente al carrito!');
+                                } else {
+                                    alert('❌ No se pudieron agregar los productos. Revisa la consola para más detalles.');
+                                }
+                                
+                            } else {
+                                console.log('🔥 POS instance not accessible');
+                                
+                                // Enhanced fallback with more info
+                                var productList = '⚠️ No se pudo acceder automáticamente al POS.\n\n';
+                                productList += 'Productos temporales creados:\n';
+                                for (var i = 0; i < products.length; i++) {
+                                    productList += '• ' + products[i].name + ' (Cant: ' + products[i].qty + ', Precio: $' + products[i].price + ')\n';
+                                }
+                                productList += '\n📋 Para agregar manualmente:\n';
+                                productList += '1. Busca "Producto temporal POS" en el POS\n';
+                                productList += '2. Agrégalo al carrito\n';
+                                productList += '3. Modifica el precio y cantidad según la lista anterior\n';
+                                productList += '4. Repite para cada producto';
+                                
+                                alert(productList);
+                            }
+                        }
+                        
+                        // Build and show popup
+                        popup.appendChild(modal);
+                        document.body.appendChild(popup);
+                        renderModal();
+                        
+                        // Close on ESC
+                        popup.onkeydown = function(e) {
+                            if (e.key === 'Escape') closePopup();
                         };
                         
-                        document.body.appendChild(button);
-                        console.log('🔥🔥🔥 BUTTON INJECTED SUCCESSFULLY! 🔥🔥🔥');
-                        return true;
-                    }
-                    
-                    function showTempProductPopup() {
-                        console.log('🔥 Showing popup...');
-                        
-                        // Simple prompts for now - easier and no XML conflicts
-                        var name = prompt('Nombre del producto:');
-                        if (!name || name.trim() === '') {
-                            console.log('🔥 No name provided');
-                            return;
-                        }
-                        
-                        var qty = prompt('Cantidad:', '1');
-                        qty = parseFloat(qty);
-                        if (isNaN(qty) || qty <= 0) {
-                            alert('La cantidad debe ser un número mayor a 0');
-                            return;
-                        }
-                        
-                        var price = prompt('Precio:', '0');
-                        price = parseFloat(price);
-                        if (isNaN(price) || price < 0) {
-                            alert('El precio debe ser un número mayor o igual a 0');
-                            return;
-                        }
-                        
-                        console.log('🔥 Adding temp product:', {name: name.trim(), qty: qty, price: price});
-                        alert('Producto temporal agregado:\n\nNombre: ' + name.trim() + '\nCantidad: ' + qty + '\nPrecio: $' + price + '\n\n¡Próximo paso: integrar con el carrito del POS!');
+                        // Close on backdrop click
+                        popup.onclick = function(e) {
+                            if (e.target === popup) closePopup();
+                        };
                     }
                     
                     // Multiple injection attempts
@@ -84,6 +253,8 @@
                     
                     // Start injection attempts
                     setTimeout(tryInject, 1000);
+                    setTimeout(tryInject, 3000);
+                    setTimeout(tryInject, 5000);
                 }
                 
                 // Start when DOM is ready
@@ -93,7 +264,7 @@
                     waitForPOS();
                 }
                 
-                console.log('🔥🔥🔥 POS SCRIPT SETUP COMPLETE 🔥🔥🔥');
+                console.log('🔥🔥🔥 POS TEMP PRODUCTS SETUP COMPLETE 🔥🔥🔥');
                 ]]>
             </script>
         </xpath>
