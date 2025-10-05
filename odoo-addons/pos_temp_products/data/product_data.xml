@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Create template (type is on product.template) -->
+        <!-- Odoo automatically creates the first product.product variant -->
+        <record id="product_pos_temp_service" model="product.template">
+            <field name="name">Producto temporal POS</field>
+            <field name="type">service</field>
+            <field name="list_price">0.0</field>
+            <field name="available_in_pos" eval="True"/>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+    </data>
+</odoo>

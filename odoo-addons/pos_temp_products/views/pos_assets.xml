@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inject script directly into POS index template -->
+    <template id="pos_script_injection" inherit_id="point_of_sale.index" priority="100">
+        <xpath expr="//head" position="inside">
+            <script type="text/javascript">
+                <![CDATA[
+                console.log('🔥🔥🔥 POS SCRIPT LOADED VIA INDEX TEMPLATE 🔥🔥🔥');
+                
+                function waitForPOS() {
+                    console.log('🔥 Waiting for POS to be ready...');
+                    
+                    function injectButton() {
+                        console.log('🔥 Attempting button injection...');
+                        
+                        if (document.querySelector('.temp-product-btn')) {
+                            console.log('🔥 Button already exists');
+                            return true;
+                        }
+                        
+                        // Create button
+                        var button = document.createElement('button');
+                        button.className = 'temp-product-btn';
+                        button.innerHTML = '+ Producto Temporal';
+                        button.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 99999; background: #28a745; color: white; padding: 12px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px;';
+                        
+                        button.onclick = function() {
+                            console.log('🔥 BUTTON CLICKED!');
+                            showTempProductPopup();
+                        };
+                        
+                        document.body.appendChild(button);
+                        console.log('🔥🔥🔥 BUTTON INJECTED SUCCESSFULLY! 🔥🔥🔥');
+                        return true;
+                    }
+                    
+                    function showTempProductPopup() {
+                        console.log('🔥 Showing popup...');
+                        
+                        // Simple prompts for now - easier and no XML conflicts
+                        var name = prompt('Nombre del producto:');
+                        if (!name || name.trim() === '') {
+                            console.log('🔥 No name provided');
+                            return;
+                        }
+                        
+                        var qty = prompt('Cantidad:', '1');
+                        qty = parseFloat(qty);
+                        if (isNaN(qty) || qty <= 0) {
+                            alert('La cantidad debe ser un número mayor a 0');
+                            return;
+                        }
+                        
+                        var price = prompt('Precio:', '0');
+                        price = parseFloat(price);
+                        if (isNaN(price) || price < 0) {
+                            alert('El precio debe ser un número mayor o igual a 0');
+                            return;
+                        }
+                        
+                        console.log('🔥 Adding temp product:', {name: name.trim(), qty: qty, price: price});
+                        alert('Producto temporal agregado:\n\nNombre: ' + name.trim() + '\nCantidad: ' + qty + '\nPrecio: $' + price + '\n\n¡Próximo paso: integrar con el carrito del POS!');
+                    }
+                    
+                    // Multiple injection attempts
+                    var attempts = 0;
+                    var maxAttempts = 30;
+                    
+                    function tryInject() {
+                        attempts++;
+                        console.log('🔥 Injection attempt', attempts, 'of', maxAttempts);
+                        
+                        if (injectButton()) {
+                            console.log('🔥 Injection successful!');
+                            return;
+                        }
+                        
+                        if (attempts < maxAttempts) {
+                            setTimeout(tryInject, 1000);
+                        } else {
+                            console.log('🔥 Max injection attempts reached');
+                        }
+                    }
+                    
+                    // Start injection attempts
+                    setTimeout(tryInject, 1000);
+                }
+                
+                // Start when DOM is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', waitForPOS);
+                } else {
+                    waitForPOS();
+                }
+                
+                console.log('🔥🔥🔥 POS SCRIPT SETUP COMPLETE 🔥🔥🔥');
+                ]]>
+            </script>
+        </xpath>
+    </template>
+</odoo>
