@@ -68,18 +68,33 @@ export class TemporaryProductPopup extends Component {
                         // Guardar el nombre personalizado (será usado por el patch de getFullProductName)
                         line.custom_product_name = prod.name;
                         
+                        // IMPORTANTE: También actualizar full_product_name para que aparezca en el recibo
+                        line.full_product_name = prod.name;
+                        
                         // Establecer cantidad y precio
                         line.qty = parseFloat(prod.qty);
                         line.price_unit = parseFloat(prod.price);
                         
+                        // Copiar los impuestos de otro producto para evitar errores de validación
+                        // Buscar un producto con impuestos configurados
+                        const productWithTaxes = allProducts.find(p => p.taxes_id && p.taxes_id.length > 0);
+                        if (productWithTaxes && productWithTaxes.taxes_id) {
+                            line.tax_ids = productWithTaxes.taxes_id;
+                            console.log("   Impuestos copiados de:", productWithTaxes.display_name);
+                        }
+                        
                         // Forzar actualización de la orden
                         const currentOrder = line.order_id;
                         if (currentOrder) {
+                            console.log("   full_product_name ANTES de recomputeOrderData:", line.full_product_name);
+                            
                             // Marcar la línea como modificada para forzar re-render
                             line._dirty = true;
                             
                             // Recalcular totales de la orden
                             currentOrder.recomputeOrderData();
+                            
+                            console.log("   full_product_name DESPUÉS de recomputeOrderData:", line.full_product_name);
                             
                             // Forzar actualización de la UI seleccionando la línea
                             currentOrder.selectOrderline(line);
@@ -87,6 +102,7 @@ export class TemporaryProductPopup extends Component {
                         
                         console.log("✅ Producto agregado:");
                         console.log("   custom_product_name:", line.custom_product_name);
+                        console.log("   full_product_name:", line.full_product_name);
                         console.log("   qty:", line.qty);
                         console.log("   price_unit:", line.price_unit);
                         console.log("   getFullProductName():", line.getFullProductName());
