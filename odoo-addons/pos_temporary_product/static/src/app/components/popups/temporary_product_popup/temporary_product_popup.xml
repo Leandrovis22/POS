@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_temporary_product.TemporaryProductPopup">
+        <Dialog title="'Producto Temporal'" size="'lg'">
+            <div t-foreach="state.products" t-as="prod" t-key="prod_index" class="mb-3">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <input class="form-control" type="text" t-model="prod.name" placeholder="Nombre del producto" />
+                    </div>
+                    <div class="col-3">
+                        <input class="form-control" type="number" t-model="prod.qty" min="1" placeholder="Cant." />
+                    </div>
+                    <div class="col-3">
+                        <input class="form-control" type="number" t-model="prod.price" min="0" step="0.01" placeholder="Precio" />
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-secondary mb-3" t-on-click="addInput">
+                <i class="fa fa-plus"/> Agregar otro producto
+            </button>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="confirm">
+                    <i class="fa fa-check"/> Guardar
+                </button>
+                <button class="btn btn-secondary" t-on-click="cancel">
+                    <i class="fa fa-times"/> Cancelar
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>
