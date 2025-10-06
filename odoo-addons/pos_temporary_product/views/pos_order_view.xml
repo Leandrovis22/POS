@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_order_form_inherit_show_full_product_name" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.show.full.product.name</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Hacer que full_product_name sea visible por defecto en lugar de oculto -->
+            <xpath expr="//field[@name='lines']//list//field[@name='full_product_name']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <!-- Ocultar product_id por defecto -->
+            <xpath expr="//field[@name='lines']//list//field[@name='product_id']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

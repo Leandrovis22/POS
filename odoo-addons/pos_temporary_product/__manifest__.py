@@ -9,6 +9,7 @@
     'depends': ['point_of_sale'],
     'data': [
         'data/product_data.xml',
+        'views/pos_order_view.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [

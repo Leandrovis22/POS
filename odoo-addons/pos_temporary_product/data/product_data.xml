@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         <!-- Crear producto temporal por defecto -->
         <record id="product_template_temporary" model="product.template">
             <field name="name">Producto Temporal POS</field>
             <field name="type">service</field>
-            <field name="categ_id" ref="product.product_category_all"/>
             <field name="list_price">0.0</field>
             <field name="available_in_pos">True</field>
             <field name="to_weight">False</field>
             <field name="sale_ok">True</field>
             <field name="purchase_ok">False</field>
-        </record>
-        
-        <record id="product_product_temporary" model="product.product">
-            <field name="product_tmpl_id" ref="product_template_temporary"/>
             <field name="default_code">TEMP_POS</field>
+            <!-- Establecer explícitamente que no tiene impuestos -->
+            <field name="taxes_id" eval="[(5, 0, 0)]"/>
         </record>
     </data>
 </odoo>
