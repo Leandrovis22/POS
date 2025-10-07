@@ -7,6 +7,10 @@
     'category': 'Point of Sale',
     'license': 'LGPL-3',
     'depends': ['point_of_sale'],
+    # Compatible con Odoo 18.0 y 19.0
+    'installable': True,
+    'application': False,
+    'auto_install': False,
     'data': [
         'data/product_data.xml',
         'views/pos_order_view.xml',

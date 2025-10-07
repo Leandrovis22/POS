@@ -1,7 +1,7 @@
 /** @odoo-module */
 
 import { Component, useState } from "@odoo/owl";
-import { usePos } from "@point_of_sale/app/hooks/pos_hook";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { useService } from "@web/core/utils/hooks";
 import { Dialog } from "@web/core/dialog/dialog";
 import { _t } from "@web/core/l10n/translation";
@@ -55,11 +55,10 @@ export class TemporaryProductPopup extends Component {
                 try {
                     console.log("Agregando producto temporal:", prod.name, "Qty:", prod.qty, "Price:", prod.price);
                     
-                    // Agregar producto usando la estructura correcta
+                    // Agregar producto usando la estructura correcta para Odoo 18
+                    // En Odoo 18, addLineToCurrentOrder espera { product_id: producto }
                     const line = await this.pos.addLineToCurrentOrder(
-                        {
-                            product_tmpl_id: templateProduct.product_tmpl_id || templateProduct,
-                        },
+                        { product_id: templateProduct },
                         {}
                     );
                     
@@ -96,8 +95,8 @@ export class TemporaryProductPopup extends Component {
                             
                             console.log("   full_product_name DESPUÉS de recomputeOrderData:", line.full_product_name);
                             
-                            // Forzar actualización de la UI seleccionando la línea
-                            currentOrder.selectOrderline(line);
+                            // Forzar actualización de la UI seleccionando la línea (método correcto en Odoo 18)
+                            currentOrder.select_orderline(line);
                         }
                         
                         console.log("✅ Producto agregado:");
@@ -105,7 +104,7 @@ export class TemporaryProductPopup extends Component {
                         console.log("   full_product_name:", line.full_product_name);
                         console.log("   qty:", line.qty);
                         console.log("   price_unit:", line.price_unit);
-                        console.log("   getFullProductName():", line.getFullProductName());
+                        console.log("   get_full_product_name():", line.get_full_product_name());
                     }
                 } catch (error) {
                     console.error("Error agregando producto:", error);

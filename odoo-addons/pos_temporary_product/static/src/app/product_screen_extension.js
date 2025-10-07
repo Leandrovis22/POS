@@ -1,6 +1,6 @@
 /** @odoo-module */
 
-import { Navbar } from "@point_of_sale/app/components/navbar/navbar";
+import { Navbar } from "@point_of_sale/app/navbar/navbar";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
 import { TemporaryProductPopup } from "./components/popups/temporary_product_popup/temporary_product_popup";

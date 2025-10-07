@@ -1,7 +1,7 @@
 /** @odoo-module */
 
 import { Component } from "@odoo/owl";
-import { usePos } from "@point_of_sale/app/hooks/pos_hook";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
 
 // Componente simple que intercepta el pos en el setup
 export class ProductLogger extends Component {
