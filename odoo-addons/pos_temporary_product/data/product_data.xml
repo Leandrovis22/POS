@@ -11,8 +11,8 @@
             <field name="sale_ok">True</field>
             <field name="purchase_ok">False</field>
             <field name="default_code">TEMP_POS</field>
-            <!-- Establecer explícitamente que no tiene impuestos -->
-            <field name="taxes_id" eval="[(5, 0, 0)]"/>
+            <!-- Buscar y asignar el impuesto 0% EXEMPT (IVA Exen) -->
+            <field name="taxes_id" eval="[(6, 0, [56])]"/>
         </record>
     </data>
 </odoo>
