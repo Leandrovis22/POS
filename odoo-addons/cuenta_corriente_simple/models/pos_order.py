@@ -40,6 +40,14 @@ class PosOrder(models.Model):
                             'No se puede procesar un pago con Cuenta Corriente sin seleccionar un cliente. '
                             'Por favor, seleccione un cliente antes de continuar.'
                         )
+                    
+                    # Validar que no sea consumidor final anónimo
+                    partner = self.env['res.partner'].browse(partner_id)
+                    if partner and (not partner.name or 'consumidor final' in partner.name.lower() or 'anónimo' in partner.name.lower() or 'anonimo' in partner.name.lower()):
+                        raise UserError(
+                            'No se puede procesar un pago con Cuenta Corriente para consumidores finales anónimos. '
+                            'Por favor, seleccione un cliente registrado o use otro método de pago.'
+                        )
                     break
         
         # Procesar la orden normalmente

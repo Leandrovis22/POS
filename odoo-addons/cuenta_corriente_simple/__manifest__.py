@@ -13,6 +13,7 @@
     'depends': ['point_of_sale', 'sale', 'contacts'],
     'data': [
         'security/ir.model.access.csv',
+        'data/sequence_data.xml',
         'data/pos_payment_method_data.xml',
         'views/customer_account_views.xml',
         'views/res_partner_views.xml',

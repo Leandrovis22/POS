@@ -30,6 +30,18 @@ patch(PaymentScreen.prototype, {
                 return;
             }
             
+            // Verificar que no sea consumidor final anónimo
+            const partnerName = (partner.name || '').toLowerCase();
+            if (partnerName.includes('consumidor final') || 
+                partnerName.includes('anónimo') || 
+                partnerName.includes('anonimo')) {
+                this.dialog.add(AlertDialog, {
+                    title: _t('Cliente No Válido'),
+                    body: _t('Los consumidores finales anónimos no pueden comprar con cuenta corriente. Por favor, seleccione un cliente registrado o use otro método de pago.'),
+                });
+                return;
+            }
+            
             // Verificar límite de crédito solo si está configurado (mayor a 0)
             if (partner.account_credit_limit && partner.account_credit_limit > 0) {
                 const newBalance = (partner.account_balance || 0) + order.get_total_with_tax();
