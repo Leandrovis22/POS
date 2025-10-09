@@ -1,5 +1,5 @@
 {
-    'name': 'Cuenta Corriente Simple',
+    'name': 'Cuenta Corriente Simple (LV)',
     'version': '18.0.1.0.0',
     'category': 'Sales/Point of Sale',
     'summary': 'Sistema simple de cuenta corriente para clientes sin contabilidad',

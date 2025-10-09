@@ -5,7 +5,7 @@
         <field name="name">customer.account.move.list</field>
         <field name="model">customer.account.move</field>
         <field name="arch" type="xml">
-            <list string="Movimientos de Cuenta" create="false">
+            <list string="Movimientos de Cuenta (LV)" create="false">
                 <field name="date"/>
                 <field name="partner_id"/>
                 <field name="description"/>
@@ -22,10 +22,10 @@
         <field name="name">customer.account.move.form</field>
         <field name="model">customer.account.move</field>
         <field name="arch" type="xml">
-            <form string="Movimiento de Cuenta">
+            <form string="Movimiento de Cuenta (LV)">
                 <header>
-                    <button name="action_cancel_move" string="Cancelar Movimiento" type="object" class="btn-danger" invisible="state != 'posted'" groups="point_of_sale.group_pos_manager"/>
-                    <button name="action_reactivate_move" string="Reactivar" type="object" class="btn-primary" invisible="state != 'cancelled'" groups="point_of_sale.group_pos_manager"/>
+                    <button name="action_cancel_move" string="Cancelar Movimiento (LV)" type="object" class="btn-danger" invisible="state != 'posted'" groups="point_of_sale.group_pos_manager"/>
+                    <button name="action_reactivate_move" string="Reactivar (LV)" type="object" class="btn-primary" invisible="state != 'cancelled'" groups="point_of_sale.group_pos_manager"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -56,10 +56,10 @@
         <field name="name">customer.payment.form</field>
         <field name="model">customer.payment</field>
         <field name="arch" type="xml">
-            <form string="Pago de Cliente">
+            <form string="Pago de Cliente (LV)">
                 <header>
-                    <button name="action_post" string="Confirmar" type="object" class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_cancel" string="Cancelar" type="object" invisible="state != 'posted'"/>
+                    <button name="action_post" string="Confirmar (LV)" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancelar (LV)" type="object" invisible="state != 'posted'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -96,7 +96,7 @@
         <field name="model">customer.payment</field>
         <field name="priority">20</field>
         <field name="arch" type="xml">
-            <form string="Registrar Pago">
+            <form string="Registrar Pago (LV)">
                 <sheet>
                     <group>
                         <group>
@@ -112,7 +112,7 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button name="action_post" string="Confirmar Pago" type="object" class="btn-primary"/>
+                    <button name="action_post" string="Confirmar Pago (LV)" type="object" class="btn-primary"/>
                     <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -124,7 +124,7 @@
         <field name="name">customer.payment.list</field>
         <field name="model">customer.payment</field>
         <field name="arch" type="xml">
-            <list string="Pagos de Clientes">
+            <list string="Pagos de Clientes (LV)">
                 <field name="name"/>
                 <field name="date"/>
                 <field name="partner_id"/>
@@ -137,32 +137,32 @@
     
     <!-- Acciones del menú -->
     <record id="action_customer_account_moves" model="ir.actions.act_window">
-        <field name="name">Movimientos de Cuenta Corriente</field>
+        <field name="name">Movimientos de Cuenta Corriente (LV)</field>
         <field name="res_model">customer.account.move</field>
         <field name="view_mode">list,form</field>
         <field name="context">{'create': False}</field>
     </record>
     
     <record id="action_customer_payments" model="ir.actions.act_window">
-        <field name="name">Pagos de Clientes</field>
+        <field name="name">Pagos de Clientes (LV)</field>
         <field name="res_model">customer.payment</field>
         <field name="view_mode">list,form</field>
     </record>
     
     <!-- Menús -->
     <menuitem id="menu_account_current_root" 
-              name="Cuenta Corriente" 
+              name="Cuenta Corriente (LV)" 
               parent="point_of_sale.menu_point_root"
               sequence="50"/>
               
     <menuitem id="menu_customer_account_moves" 
-              name="Movimientos" 
+              name="Movimientos (LV)" 
               parent="menu_account_current_root"
               action="action_customer_account_moves"
               sequence="10"/>
               
     <menuitem id="menu_customer_payments" 
-              name="Pagos" 
+              name="Pagos (LV)" 
               parent="menu_account_current_root"
               action="action_customer_payments"
               sequence="20"/>

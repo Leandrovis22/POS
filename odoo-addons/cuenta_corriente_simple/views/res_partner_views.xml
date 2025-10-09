@@ -10,12 +10,12 @@
                 <header>
                     <button name="action_view_account_statement" 
                             type="object" 
-                            string="Ver Estado de Cuenta" 
+                            string="Ver Estado de Cuenta (LV)" 
                             class="btn-primary"
                             invisible="customer_rank == 0"/>
                     <button name="action_register_payment" 
                             type="object" 
-                            string="Registrar Pago" 
+                            string="Registrar Pago (LV)" 
                             class="btn-secondary"
                             invisible="customer_rank == 0 or account_balance &lt;= 0"/>
                 </header>
@@ -31,7 +31,7 @@
             
             <!-- Agregar pestaña de cuenta corriente -->
             <xpath expr="//notebook" position="inside">
-                <page string="Cuenta Corriente" invisible="customer_rank == 0">
+                <page string="Cuenta Corriente (LV)" invisible="customer_rank == 0">
                     <group>
                         <group>
                             <field name="account_balance" widget="monetary"/>
