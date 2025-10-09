@@ -24,9 +24,14 @@
         <field name="arch" type="xml">
             <form string="Movimiento de Cuenta">
                 <header>
+                    <button name="action_cancel_move" string="Cancelar Movimiento" type="object" class="btn-danger" invisible="state != 'posted'" groups="point_of_sale.group_pos_manager"/>
+                    <button name="action_reactivate_move" string="Reactivar" type="object" class="btn-primary" invisible="state != 'cancelled'" groups="point_of_sale.group_pos_manager"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
+                    <div class="alert alert-warning" role="alert" invisible="state != 'cancelled'">
+                        Este movimiento está cancelado y no afecta al saldo del cliente.
+                    </div>
                     <group>
                         <group>
                             <field name="partner_id"/>
@@ -38,6 +43,7 @@
                             <field name="credit"/>
                             <field name="balance"/>
                             <field name="reference"/>
+                            <field name="pos_order_id" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
@@ -72,12 +78,43 @@
                             <field name="memo"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Notas y Actividades" name="chatter">
+                            <field name="message_follower_ids" widget="mail_followers"/>
+                            <field name="activity_ids" widget="mail_activity"/>
+                            <field name="message_ids" widget="mail_thread"/>
+                        </page>
+                    </notebook>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Vista Form simplificada para popup/dialog -->
+    <record id="view_customer_payment_form_popup" model="ir.ui.view">
+        <field name="name">customer.payment.form.popup</field>
+        <field name="model">customer.payment</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="Registrar Pago">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id" options="{'no_create': True}" readonly="1"/>
+                            <field name="date"/>
+                            <field name="payment_method"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="memo" placeholder="Agregar nota opcional..."/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_post" string="Confirmar Pago" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
             </form>
         </field>
     </record>

@@ -24,6 +24,36 @@ class CustomerAccountMove(models.Model):
         ('cancelled', 'Cancelado')
     ], default='posted', string='Estado')
     
+    def write(self, vals):
+        """Recalcular saldo del partner cuando cambia el estado"""
+        result = super().write(vals)
+        if 'state' in vals:
+            # Recalcular saldo de los partners afectados
+            partners = self.mapped('partner_id')
+            for partner in partners:
+                partner._compute_account_balance()
+        return result
+    
+    def unlink(self):
+        """Recalcular saldo del partner al eliminar movimientos"""
+        partners = self.mapped('partner_id')
+        result = super().unlink()
+        for partner in partners:
+            partner._compute_account_balance()
+        return result
+    
+    def action_cancel_move(self):
+        """Cancelar movimiento manualmente"""
+        for move in self:
+            move.state = 'cancelled'
+            move.partner_id._compute_account_balance()
+    
+    def action_reactivate_move(self):
+        """Reactivar movimiento cancelado"""
+        for move in self:
+            move.state = 'posted'
+            move.partner_id._compute_account_balance()
+    
     @api.depends('debit', 'credit', 'partner_id', 'date', 'state')
     def _compute_balance(self):
         """Calcular saldo acumulado para cada movimiento"""

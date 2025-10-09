@@ -35,7 +35,13 @@ class ResPartner(models.Model):
     
     def action_register_payment(self):
         """Abrir wizard para registrar pago"""
-        return {
+        # Buscar la vista simplificada por nombre
+        popup_view = self.env['ir.ui.view'].search([
+            ('name', '=', 'customer.payment.form.popup'),
+            ('model', '=', 'customer.payment')
+        ], limit=1)
+        
+        action = {
             'name': 'Registrar Pago',
             'type': 'ir.actions.act_window',
             'res_model': 'customer.payment',
@@ -46,3 +52,8 @@ class ResPartner(models.Model):
                 'default_amount': max(0, self.account_balance)
             }
         }
+        
+        if popup_view:
+            action['view_id'] = popup_view.id
+            
+        return action
