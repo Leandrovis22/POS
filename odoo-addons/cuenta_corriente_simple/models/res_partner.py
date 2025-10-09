@@ -9,10 +9,10 @@ class ResPartner(models.Model):
                                      currency_field='currency_id')
     account_move_ids = fields.One2many('customer.account.move', 'partner_id', 
                                       string='Movimientos de Cuenta')
-    credit_limit = fields.Monetary(string='Límite de Crédito', 
+    account_credit_limit = fields.Monetary(string='Límite de Crédito CC', 
                                   currency_field='currency_id',
-                                  default=0.0)
-    has_credit = fields.Boolean(string='Tiene Crédito', default=False)
+                                  default=0.0,
+                                  help='Límite de crédito para cuenta corriente. Dejar en 0 para crédito ilimitado.')
     
     @api.depends('account_move_ids', 'account_move_ids.debit', 'account_move_ids.credit', 'account_move_ids.state')
     def _compute_account_balance(self):
@@ -28,7 +28,7 @@ class ResPartner(models.Model):
             'name': f'Estado de Cuenta - {self.name}',
             'type': 'ir.actions.act_window',
             'res_model': 'customer.account.move',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('partner_id', '=', self.id)],
             'context': {'default_partner_id': self.id}
         }

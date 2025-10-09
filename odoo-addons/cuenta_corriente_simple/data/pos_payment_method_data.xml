@@ -13,7 +13,7 @@
         <record id="pos_payment_method_customer_account" model="pos.payment.method">
             <field name="name">Cuenta Corriente</field>
             <field name="journal_id" ref="account_journal_customer_account"/>
-            <field name="identify_customer" eval="True"/>
+            <field name="split_transactions" eval="True"/>
             <field name="company_id" ref="base.main_company"/>
         </record>
     </data>

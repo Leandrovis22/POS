@@ -6,9 +6,9 @@ class PosOrder(models.Model):
     is_credit_sale = fields.Boolean(string='Venta a Crédito', default=False)
     
     @api.model
-    def _process_order(self, order, draft, existing_order):
+    def _process_order(self, order, existing_order):
         """Extender procesamiento para ventas a crédito"""
-        order_id = super()._process_order(order, draft, existing_order)
+        order_id = super()._process_order(order, existing_order)
         
         if order_id:
             pos_order = self.browse(order_id)
@@ -18,7 +18,7 @@ class PosOrder(models.Model):
                 payment_method = payment[2].get('payment_method_id')
                 if payment_method:
                     method = self.env['pos.payment.method'].browse(payment_method)
-                    if method.journal_id and method.journal_id.type == 'cash' and 'cuenta' in method.name.lower():
+                    if method.name and 'cuenta' in method.name.lower():
                         # Es un pago con cuenta corriente
                         pos_order.is_credit_sale = True
                         

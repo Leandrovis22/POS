@@ -2,7 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
-import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
+import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
 
 patch(PaymentScreen.prototype, {
@@ -12,8 +12,8 @@ patch(PaymentScreen.prototype, {
         
         // Verificar si hay pagos con cuenta corriente
         let hasCreditPayment = false;
-        for (const payment of order.get_paymentlines()) {
-            const paymentMethod = payment.payment_method;
+        for (const payment of order.payment_ids) {
+            const paymentMethod = payment.payment_method_id;
             if (paymentMethod && paymentMethod.name && paymentMethod.name.toLowerCase().includes('cuenta')) {
                 hasCreditPayment = true;
                 break;
@@ -23,19 +23,19 @@ patch(PaymentScreen.prototype, {
         // Si hay pago con cuenta corriente, verificar cliente y límite
         if (hasCreditPayment) {
             if (!partner) {
-                await this.popup.add(ErrorPopup, {
+                this.dialog.add(AlertDialog, {
                     title: _t('Cliente Requerido'),
                     body: _t('Debe seleccionar un cliente para pagos con cuenta corriente.'),
                 });
                 return;
             }
             
-            // Verificar límite de crédito si está configurado
-            if (partner.credit_limit && partner.credit_limit > 0) {
+            // Verificar límite de crédito solo si está configurado (mayor a 0)
+            if (partner.account_credit_limit && partner.account_credit_limit > 0) {
                 const newBalance = (partner.account_balance || 0) + order.get_total_with_tax();
-                if (newBalance > partner.credit_limit) {
-                    const excedido = this.env.utils.formatCurrency(newBalance - partner.credit_limit);
-                    await this.popup.add(ErrorPopup, {
+                if (newBalance > partner.account_credit_limit) {
+                    const excedido = this.env.utils.formatCurrency(newBalance - partner.account_credit_limit);
+                    this.dialog.add(AlertDialog, {
                         title: _t('Límite de Crédito Excedido'),
                         body: _t(`El cliente excedería su límite de crédito en ${excedido}.`),
                     });
