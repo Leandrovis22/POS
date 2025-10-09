@@ -1,4 +1,8 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class PosOrder(models.Model):
     _inherit = 'pos.order'
@@ -8,32 +12,61 @@ class PosOrder(models.Model):
     @api.model
     def _process_order(self, order, existing_order):
         """Extender procesamiento para ventas a crédito"""
-        order_id = super()._process_order(order, existing_order)
+        _logger.info("=== CUENTA CORRIENTE: Procesando orden ===")
+        _logger.info(f"payment_ids: {order.get('payment_ids', [])}")
         
-        if order_id:
-            pos_order = self.browse(order_id)
+        # Verificar si hay pagos con cuenta corriente ANTES de procesar
+        has_credit_payment = False
+        for payment in order.get('payment_ids', []):
+            _logger.info(f"Payment completo: {payment}")
+            payment_data = payment[2] if len(payment) > 2 else {}
+            payment_method_id = payment_data.get('payment_method_id')
+            _logger.info(f"Método de pago ID: {payment_method_id}")
             
-            # Verificar si hay pagos con cuenta corriente
-            for payment in order.get('statement_ids', []):
-                payment_method = payment[2].get('payment_method_id')
-                if payment_method:
-                    method = self.env['pos.payment.method'].browse(payment_method)
-                    if method.name and 'cuenta' in method.name.lower():
-                        # Es un pago con cuenta corriente
-                        pos_order.is_credit_sale = True
-                        
-                        # Crear movimiento en cuenta corriente
-                        if pos_order.partner_id:
-                            self.env['customer.account.move'].create({
-                                'partner_id': pos_order.partner_id.id,
-                                'date': pos_order.date_order,
-                                'description': f'Venta POS {pos_order.name}',
-                                'debit': pos_order.amount_total,
-                                'pos_order_id': pos_order.id,
-                                'reference': pos_order.name,
-                                'state': 'posted'
-                            })
-                            # Actualizar saldo
-                            pos_order.partner_id._compute_account_balance()
+            if payment_method_id:
+                method = self.env['pos.payment.method'].browse(payment_method_id)
+                _logger.info(f"Nombre del método: {method.name}")
+                
+                if method.name and 'cuenta' in method.name.lower():
+                    has_credit_payment = True
+                    _logger.info("¡Pago con Cuenta Corriente detectado!")
+                    
+                    # Validar que haya un cliente
+                    partner_id = order.get('partner_id')
+                    _logger.info(f"Partner ID: {partner_id}")
+                    
+                    if not partner_id:
+                        raise UserError(
+                            'No se puede procesar un pago con Cuenta Corriente sin seleccionar un cliente. '
+                            'Por favor, seleccione un cliente antes de continuar.'
+                        )
+                    break
+        
+        # Procesar la orden normalmente
+        order_id = super()._process_order(order, existing_order)
+        _logger.info(f"Orden procesada ID: {order_id}, tiene pago con crédito: {has_credit_payment}")
+        
+        # Si hay pago con cuenta corriente, crear movimiento
+        if order_id and has_credit_payment:
+            pos_order = self.browse(order_id)
+            pos_order.is_credit_sale = True
+            
+            # Crear movimiento en cuenta corriente solo si hay cliente
+            if pos_order.partner_id:
+                _logger.info(f"Creando movimiento para partner {pos_order.partner_id.name}, monto: {pos_order.amount_total}")
+                
+                self.env['customer.account.move'].create({
+                    'partner_id': pos_order.partner_id.id,
+                    'date': pos_order.date_order,
+                    'description': f'Venta POS {pos_order.name}',
+                    'debit': pos_order.amount_total,
+                    'pos_order_id': pos_order.id,
+                    'reference': pos_order.name,
+                    'state': 'posted'
+                })
+                # Actualizar saldo
+                pos_order.partner_id._compute_account_balance()
+                
+                _logger.info("¡Movimiento de cuenta corriente creado!")
         
         return order_id

@@ -12,7 +12,7 @@ class CustomerAccountMove(models.Model):
     debit = fields.Monetary(string='Debe (Compras)', currency_field='currency_id')
     credit = fields.Monetary(string='Haber (Pagos)', currency_field='currency_id')
     balance = fields.Monetary(string='Saldo', currency_field='currency_id', 
-                             compute='_compute_balance', store=True)
+                             compute='_compute_balance', store=False)
     currency_id = fields.Many2one('res.currency', string='Moneda',
                                  default=lambda self: self.env.company.currency_id)
     pos_order_id = fields.Many2one('pos.order', string='Orden POS')
@@ -24,17 +24,39 @@ class CustomerAccountMove(models.Model):
         ('cancelled', 'Cancelado')
     ], default='posted', string='Estado')
     
-    @api.depends('debit', 'credit', 'partner_id')
+    @api.depends('debit', 'credit', 'partner_id', 'date', 'state')
     def _compute_balance(self):
-        for record in self:
-            # Calcular saldo acumulado hasta este movimiento
-            previous_moves = self.search([
-                ('partner_id', '=', record.partner_id.id),
-                ('date', '<', record.date),
-                ('state', '=', 'posted')
+        """Calcular saldo acumulado para cada movimiento"""
+        # Agrupar por partner para optimizar
+        partners = self.mapped('partner_id')
+        
+        for partner in partners:
+            # Obtener TODOS los movimientos del partner (incluyendo los del recordset actual)
+            partner_moves = self.filtered(lambda m: m.partner_id == partner)
+            
+            # Obtener movimientos adicionales de la BD que no están en el recordset
+            existing_moves = self.search([
+                ('partner_id', '=', partner.id),
+                ('state', '=', 'posted'),
+                ('id', 'not in', partner_moves.ids)
             ])
-            previous_balance = sum(previous_moves.mapped('debit')) - sum(previous_moves.mapped('credit'))
-            record.balance = previous_balance + record.debit - record.credit
+            
+            # Combinar todos los movimientos
+            all_moves = (partner_moves | existing_moves).filtered(lambda m: m.state == 'posted')
+            
+            # Ordenar por fecha y ID de forma ascendente (cronológico)
+            sorted_moves = all_moves.sorted(lambda m: (m.date, m.id))
+            
+            # Calcular saldo acumulado
+            accumulated_balance = 0
+            for move in sorted_moves:
+                accumulated_balance += move.debit - move.credit
+                # Asignar el saldo a este movimiento
+                move.balance = accumulated_balance
+        
+        # Para movimientos en borrador, solo mostrar su efecto
+        for record in self.filtered(lambda m: m.state != 'posted'):
+            record.balance = record.debit - record.credit
 
 class CustomerPayment(models.Model):
     _name = 'customer.payment'
@@ -46,7 +68,7 @@ class CustomerPayment(models.Model):
     amount = fields.Monetary(string='Monto', required=True, tracking=True)
     currency_id = fields.Many2one('res.currency', string='Moneda',
                                  default=lambda self: self.env.company.currency_id)
-    date = fields.Date(string='Fecha', default=fields.Date.today, required=True, tracking=True)
+    date = fields.Datetime(string='Fecha', default=fields.Datetime.now, required=True, tracking=True)
     payment_method = fields.Selection([
         ('cash', 'Efectivo'),
         ('bank', 'Transferencia'),
