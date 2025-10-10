@@ -25,8 +25,40 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <!-- Agregar notebook page de cuenta corriente -->
-            <xpath expr="//notebook" position="inside">
+            
+            <!-- Ocultar campos innecesarios -->
+            <field name="function" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="email" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="website" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="title" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="category_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            
+            <!-- Ocultar pestañas innecesarias -->
+            <page name="contact_addresses" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </page>
+            <page name="sales_purchases" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </page>
+            <page name="accounting" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </page>
+            <page name="internal_notes" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </page>
+            
+            <!-- Agregar notebook page de cuenta corriente AL PRINCIPIO -->
+            <xpath expr="//page[1]" position="before">
                 <page name="customer_credit" string="Cuenta Corriente">
                     <group>
                         <group>

@@ -1,0 +1,4 @@
+/* Oculta el chatter en el formulario de cliente */
+.o-mail-ChatterContainer.o-mail-Form-chatter.mt-4.mt-md-0 {
+    display: none !important;
+}

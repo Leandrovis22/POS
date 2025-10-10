@@ -42,6 +42,9 @@
         'report/pos_order_credit_report.xml',
     ],
     'assets': {
+        'web.assets_backend': [
+            'pos_customer_credit/static/src/css/hide_chatter.css',
+        ],
         'point_of_sale._assets_pos': [
             'pos_customer_credit/static/src/app/app.js',
             'pos_customer_credit/static/src/app/components/customer_credit_button/customer_credit_button.js',
