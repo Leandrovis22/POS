@@ -17,11 +17,15 @@
         'data/pos_payment_method_data.xml',
         'views/customer_account_views.xml',
         'views/res_partner_views.xml',
+        'views/account_move_views.xml',
         'views/pos_assets.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [
             'cuenta_corriente_simple/static/src/js/pos_customizations.js',
+        ],
+        'web.assets_backend': [
+            'cuenta_corriente_simple/static/src/css/hide_outstanding_credits.css',
         ],
     },
     'installable': True,
