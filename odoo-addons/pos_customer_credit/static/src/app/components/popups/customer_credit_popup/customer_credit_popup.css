@@ -1,0 +1,41 @@
+.customer-credit-popup {
+    min-width: 700px;
+    max-width: 900px;
+}
+
+.customer-credit-popup .credit-summary {
+    background: #f8f9fa;
+}
+
+.customer-credit-popup .credit-summary h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.customer-credit-popup .movements-list {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.customer-credit-popup .movement-row.cursor-pointer:hover {
+    background-color: #f8f9fa;
+}
+
+.customer-credit-popup .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.customer-credit-button {
+    min-width: 200px;
+}
+
+.customer-credit-button .very-small {
+    font-size: 0.75rem;
+}
+
+.customer-credit-button .small {
+    font-size: 0.85rem;
+}

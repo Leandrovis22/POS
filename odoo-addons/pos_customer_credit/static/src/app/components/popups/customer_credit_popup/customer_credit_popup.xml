@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_customer_credit.CustomerCreditPopup">
+        <div class="popup customer-credit-popup">
+            <header class="title">
+                <i class="fa fa-credit-card"/> <t t-esc="props.title"/>
+            </header>
+            
+            <main class="body">
+                <!-- Resumen del Saldo -->
+                <div class="credit-summary mb-4 p-3 border rounded">
+                    <div class="row">
+                        <div class="col-6">
+                            <h4>Saldo Actual</h4>
+                            <h2 t-att-class="balanceClass">
+                                <t t-esc="formatCurrency(Math.abs(balance))"/>
+                            </h2>
+                            <p t-att-class="balanceClass">
+                                <strong><t t-esc="balanceLabel"/></strong>
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats">
+                                <p>
+                                    <strong>Total Órdenes:</strong>
+                                    <t t-esc="creditInfo.total_orders"/>
+                                </p>
+                                <p t-if="creditInfo.pending_amount > 0">
+                                    <strong>Deuda Pendiente:</strong>
+                                    <span class="text-danger">
+                                        <t t-esc="formatCurrency(creditInfo.pending_amount)"/>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Últimos Movimientos -->
+                <div class="movements-section">
+                    <h5 class="mb-3">
+                        <i class="fa fa-history"/> Últimos Movimientos
+                    </h5>
+                    
+                    <div t-if="movements.length === 0" class="alert alert-info">
+                        No hay movimientos registrados
+                    </div>
+                    
+                    <div t-else="" class="movements-list" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover">
+                            <thead class="sticky-top bg-white">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th class="text-end">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="movements" t-as="movement" t-key="movement.id"
+                                    class="movement-row"
+                                    t-att-class="movement.order_id ? 'cursor-pointer' : ''"
+                                    t-on-click="() => viewOrder(movement.order_id)">
+                                    <td class="small">
+                                        <t t-esc="formatDate(movement.date)"/>
+                                    </td>
+                                    <td>
+                                        <i t-att-class="'fa ' + getMovementIcon(movement.type)"/>
+                                        <span class="small ms-1">
+                                            <t t-esc="movement.type_label"/>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div><t t-esc="movement.description"/></div>
+                                        <small t-if="movement.order_name" class="text-muted">
+                                            <i class="fa fa-shopping-cart"/> <t t-esc="movement.order_name"/>
+                                        </small>
+                                    </td>
+                                    <td class="text-end" t-att-class="getMovementClass(movement)">
+                                        <strong>
+                                            <t t-if="movement.amount > 0">+</t>
+                                            <t t-esc="formatCurrency(movement.amount)"/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="action-buttons mt-4 d-flex gap-2">
+                    <button class="btn btn-primary flex-grow-1"
+                            t-if="balance > 0"
+                            t-on-click="registerPayment">
+                        <i class="fa fa-money"/> Registrar Pago
+                    </button>
+                    <button class="btn btn-secondary flex-grow-1"
+                            t-on-click="openBackendView">
+                        <i class="fa fa-external-link"/> Controlar CC Cliente
+                    </button>
+                </div>
+            </main>
+
+            <footer class="footer">
+                <button class="btn btn-lg btn-secondary"
+                        t-on-click="cancel">
+                    Cerrar
+                </button>
+            </footer>
+        </div>
+    </t>
+</templates>

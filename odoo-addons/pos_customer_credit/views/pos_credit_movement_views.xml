@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario de Credit Movement -->
+    <record id="view_pos_credit_movement_form" model="ir.ui.view">
+        <field name="name">pos.credit.movement.form</field>
+        <field name="model">pos.credit.movement</field>
+        <field name="arch" type="xml">
+            <form string="Movimiento de Crédito">
+                <header>
+                    <button name="action_confirm" string="Confirmar" 
+                            type="object" 
+                            invisible="state != 'draft'"
+                            class="btn-primary"/>
+                    <button name="action_cancel" string="Cancelar" 
+                            type="object" 
+                            invisible="state != 'draft'"
+                            class="btn-secondary"/>
+                    <button name="action_set_to_draft" string="Volver a Borrador" 
+                            type="object" 
+                            invisible="state == 'draft'"
+                            groups="point_of_sale.group_pos_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id" 
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="order_id" readonly="1"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="movement_type"/>
+                            <field name="amount" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Descripción del movimiento..."/>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Notas adicionales..."/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="user_id" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Vista de Lista de Credit Movement -->
+    <record id="view_pos_credit_movement_tree" model="ir.ui.view">
+        <field name="name">pos.credit.movement.tree</field>
+        <field name="model">pos.credit.movement</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="amount &lt; 0" 
+                  decoration-danger="amount &gt; 0"
+                  decoration-muted="state == 'cancelled'">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="movement_type"/>
+                <field name="order_id"/>
+                <field name="description"/>
+                <field name="amount" widget="monetary" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'confirmed'"
+                       decoration-info="state == 'draft'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="user_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Vista de Búsqueda -->
+    <record id="view_pos_credit_movement_search" model="ir.ui.view">
+        <field name="name">pos.credit.movement.search</field>
+        <field name="model">pos.credit.movement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="order_id"/>
+                <field name="description"/>
+                
+                <filter name="filter_sales" string="Ventas" 
+                        domain="[('movement_type', '=', 'sale')]"/>
+                <filter name="filter_payments" string="Pagos" 
+                        domain="[('movement_type', '=', 'payment')]"/>
+                <filter name="filter_additions" string="Productos Agregados" 
+                        domain="[('movement_type', '=', 'product_add')]"/>
+                <filter name="filter_removals" string="Productos Removidos" 
+                        domain="[('movement_type', '=', 'product_remove')]"/>
+                
+                <separator/>
+                <filter name="filter_confirmed" string="Confirmados" 
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_draft" string="Borradores" 
+                        domain="[('state', '=', 'draft')]"/>
+                
+                <separator/>
+                <filter name="filter_this_month" string="Este Mes" 
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01'))]"/>
+                
+                <group expand="0" string="Agrupar Por">
+                    <filter name="group_by_partner" string="Cliente" 
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_order" string="Orden" 
+                            context="{'group_by': 'order_id'}"/>
+                    <filter name="group_by_type" string="Tipo" 
+                            context="{'group_by': 'movement_type'}"/>
+                    <filter name="group_by_date" string="Fecha" 
+                            context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Acción de Ventana -->
+    <record id="action_pos_credit_movement" model="ir.actions.act_window">
+        <field name="name">Movimientos de Cuenta Corriente</field>
+        <field name="res_model">pos.credit.movement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_filter_confirmed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay movimientos de cuenta corriente registrados
+            </p>
+            <p>
+                Los movimientos se generan automáticamente cuando se realizan ventas a crédito,
+                pagos, o modificaciones de órdenes.
+            </p>
+        </field>
+    </record>
+</odoo>

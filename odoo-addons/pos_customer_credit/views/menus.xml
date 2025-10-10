@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Principal -->
+    <menuitem id="menu_pos_customer_credit_root"
+              name="Cuenta Corriente"
+              parent="point_of_sale.menu_point_root"
+              sequence="50"/>
+    
+    <!-- Submenús -->
+    <menuitem id="menu_pos_credit_movement"
+              name="Movimientos de Crédito"
+              parent="menu_pos_customer_credit_root"
+              action="action_pos_credit_movement"
+              sequence="10"/>
+    
+    <menuitem id="menu_pos_customers_credit"
+              name="Clientes con CC"
+              parent="menu_pos_customer_credit_root"
+              action="base.action_partner_form"
+              sequence="20"/>
+</odoo>

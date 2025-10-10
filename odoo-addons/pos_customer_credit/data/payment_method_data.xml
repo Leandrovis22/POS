@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Método de Pago: Cuenta Corriente -->
+        <record id="payment_method_customer_credit" model="pos.payment.method">
+            <field name="name">Cuenta Corriente</field>
+            <field name="is_credit_payment" eval="True"/>
+            <field name="is_cash_count" eval="False"/>
+            <field name="split_transactions" eval="False"/>
+        </record>
+    </data>
+</odoo>

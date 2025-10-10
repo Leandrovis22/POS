@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Configuración de POS -->
+    <record id="view_pos_config_form_credit" model="ir.ui.view">
+        <field name="name">pos.config.form.credit</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='payment_methods']" position="after">
+                <page name="customer_credit" string="Cuenta Corriente">
+                    <group>
+                        <group>
+                            <field name="enable_customer_credit"/>
+                            <field name="require_customer_for_credit" 
+                                   invisible="not enable_customer_credit"/>
+                        </group>
+                        <group>
+                            <field name="credit_payment_method_id" 
+                                   invisible="not enable_customer_credit"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    
+                    <div class="alert alert-info" role="alert" 
+                         invisible="not enable_customer_credit">
+                        <h4>Configuración de Cuenta Corriente</h4>
+                        <ul>
+                            <li>Los clientes pueden comprar a crédito sin límite por defecto</li>
+                            <li>Se permite pago combinado (efectivo + cuenta corriente)</li>
+                            <li>Las órdenes pueden ser modificadas (agregar/quitar productos)</li>
+                            <li>El saldo se actualiza automáticamente con cada movimiento</li>
+                        </ul>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

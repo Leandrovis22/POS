@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario de POS Order extendida -->
+    <record id="view_pos_order_form_credit" model="ir.ui.view">
+        <field name="name">pos.order.form.credit</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar campos de crédito después de amount_total -->
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="has_credit_payment" invisible="1"/>
+                <field name="is_modified" invisible="1"/>
+                <field name="invoice_outdated" invisible="1"/>
+                
+                <field name="credit_amount" widget="monetary" 
+                       invisible="not has_credit_payment"
+                       decoration-danger="credit_amount &gt; 0"/>
+                <field name="cash_amount" widget="monetary" 
+                       invisible="not has_credit_payment"/>
+                <field name="credit_amount_due" widget="monetary"
+                       invisible="not has_credit_payment"
+                       decoration-success="credit_amount_due &lt;= 0"
+                       decoration-danger="credit_amount_due &gt; 0"/>
+            </xpath>
+            
+            <!-- Agregar información de modificación -->
+            <xpath expr="//field[@name='amount_total']" position="before">
+                <field name="original_amount_total" widget="monetary" 
+                       invisible="not is_modified"/>
+                <field name="current_products_value" widget="monetary"
+                       invisible="not is_modified"/>
+            </xpath>
+            
+            <!-- Botones de acción -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_credit_movements" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-exchange"
+                        invisible="not has_credit_payment">
+                    <field name="modification_count" widget="statinfo" string="Modificaciones"/>
+                </button>
+                
+                <button name="action_print_order_with_balance" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-print"
+                        string="PDF con Saldo"
+                        invisible="not has_credit_payment"/>
+                
+                <button name="action_modify_order" 
+                        type="object" 
+                        class="oe_stat_button btn-warning" 
+                        icon="fa-edit"
+                        string="Modificar Orden"
+                        invisible="state == 'cancel'"/>
+            </xpath>
+            
+            <!-- Alerta de factura desactualizada -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning" role="alert" 
+                     invisible="not invoice_outdated">
+                    <strong>⚠️ Factura Desactualizada:</strong>
+                    La orden ha sido modificada después de generar la factura. 
+                    Debe cancelar y regenerar la factura desde la orden actual.
+                </div>
+            </xpath>
+            
+            <!-- Agregar notebook page de movimientos CC -->
+            <xpath expr="//page[@name='payments']" position="after">
+                <page name="credit_movements" string="Movimientos CC" 
+                      invisible="not has_credit_payment">
+                    <group>
+                        <group>
+                            <label for="credit_amount_due" string="Saldo de esta Orden"/>
+                            <div>
+                                <field name="credit_amount_due" widget="monetary" class="oe_inline"/>
+                                <span class="text-muted" invisible="credit_amount_due &lt;= 0"> (Debe)</span>
+                                <span class="text-success" invisible="credit_amount_due &gt;= 0"> (A favor)</span>
+                            </div>
+                        </group>
+                    </group>
+                    
+                    <field name="credit_movement_ids">
+                        <tree decoration-success="amount &lt; 0" decoration-danger="amount &gt; 0">
+                            <field name="date"/>
+                            <field name="movement_type"/>
+                            <field name="description"/>
+                            <field name="amount" widget="monetary" sum="Total"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'confirmed'"
+                                   decoration-info="state == 'draft'"
+                                   decoration-muted="state == 'cancelled'"/>
+                            <field name="user_id"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            
+            <!-- Marcar líneas removidas en la vista -->
+            <xpath expr="//field[@name='lines']/tree//field[@name='qty']" position="attributes">
+                <attribute name="decoration-muted">qty &lt;= 0</attribute>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Vista de Lista de POS Order -->
+    <record id="view_pos_order_tree_credit" model="ir.ui.view">
+        <field name="name">pos.order.tree.credit</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="has_credit_payment" optional="hide"/>
+                <field name="credit_amount_due" optional="show" widget="monetary"
+                       decoration-success="credit_amount_due &lt;= 0"
+                       decoration-danger="credit_amount_due &gt; 0"/>
+                <field name="is_modified" optional="show" widget="boolean"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Filtro de búsqueda -->
+    <record id="view_pos_order_search_credit" model="ir.ui.view">
+        <field name="name">pos.order.search.credit</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='invoiced']" position="after">
+                <separator/>
+                <filter name="has_credit" string="Con Cuenta Corriente" 
+                        domain="[('has_credit_payment', '=', True)]"/>
+                <filter name="pending_credit" string="Con Deuda Pendiente" 
+                        domain="[('credit_amount_due', '&gt;', 0)]"/>
+                <filter name="modified_orders" string="Órdenes Modificadas" 
+                        domain="[('is_modified', '=', True)]"/>
+                <filter name="outdated_invoices" string="Facturas Desactualizadas" 
+                        domain="[('invoice_outdated', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

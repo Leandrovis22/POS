@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template del Reporte PDF -->
+    <template id="report_pos_order_credit_document">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="order">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    
+                    <!-- Encabezado -->
+                    <div class="row">
+                        <div class="col-6">
+                            <h2>Orden de Venta</h2>
+                            <p>
+                                <strong>Número:</strong> <span t-field="order.name"/><br/>
+                                <strong>Fecha:</strong> <span t-field="order.date_order" t-options='{"widget": "datetime"}'/><br/>
+                                <strong>Vendedor:</strong> <span t-field="order.user_id.name"/>
+                            </p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h3>Cliente</h3>
+                            <p>
+                                <strong><span t-field="order.partner_id.name"/></strong><br/>
+                                <span t-if="order.partner_id.street" t-field="order.partner_id.street"/><br/>
+                                <span t-if="order.partner_id.phone">Tel: <span t-field="order.partner_id.phone"/></span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Alerta si está modificada -->
+                    <div t-if="order.is_modified" class="alert alert-warning" role="alert">
+                        <strong>⚠️ Orden Modificada:</strong> Esta orden ha sido modificada después de su creación.
+                        El monto original era <span t-field="order.original_amount_total" t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>.
+                    </div>
+                    
+                    <!-- Productos Actuales -->
+                    <h3>Productos Actuales</h3>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-end">Cantidad</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="order.lines.filtered(lambda l: l.qty > 0)" t-as="line">
+                                <tr>
+                                    <td><span t-field="line.product_id.display_name"/></td>
+                                    <td class="text-end"><span t-field="line.qty"/></td>
+                                    <td class="text-end">
+                                        <span t-field="line.price_unit" 
+                                              t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.price_subtotal_incl" 
+                                              t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Resumen de Pagos y Saldo -->
+                    <div class="row mt-4">
+                        <div class="col-6 offset-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Total Actual:</strong></td>
+                                    <td class="text-end">
+                                        <strong>
+                                            <span t-field="order.current_products_value" 
+                                                  t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr t-if="order.has_credit_payment">
+                                    <td>Pagado en Efectivo:</td>
+                                    <td class="text-end">
+                                        <span t-field="order.cash_amount" 
+                                              t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                    </td>
+                                </tr>
+                                <tr t-if="order.has_credit_payment">
+                                    <td>Pagado con Cuenta Corriente:</td>
+                                    <td class="text-end">
+                                        <span t-field="order.credit_amount" 
+                                              t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                    </td>
+                                </tr>
+                                <tr t-if="order.has_credit_payment" class="border-top">
+                                    <td><strong>Saldo de esta Orden:</strong></td>
+                                    <td class="text-end">
+                                        <strong t-if="order.credit_amount_due > 0" class="text-danger">
+                                            <span t-field="order.credit_amount_due" 
+                                                  t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (Debe)
+                                        </strong>
+                                        <strong t-if="order.credit_amount_due <= 0" class="text-success">
+                                            <span t-esc="abs(order.credit_amount_due)" 
+                                                  t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (A favor)
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr t-if="order.has_credit_payment" class="border-top">
+                                    <td><strong>Saldo Total del Cliente:</strong></td>
+                                    <td class="text-end">
+                                        <strong t-if="order.partner_id.credit_balance > 0" class="text-danger">
+                                            <span t-field="order.partner_id.credit_balance" 
+                                                  t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (Debe)
+                                        </strong>
+                                        <strong t-if="order.partner_id.credit_balance <= 0" class="text-success">
+                                            <span t-esc="abs(order.partner_id.credit_balance)" 
+                                                  t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (A favor)
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Historial de Modificaciones -->
+                    <div t-if="order.modification_count > 0" class="mt-4">
+                        <h4>Historial de Modificaciones</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th class="text-end">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="order.credit_movement_ids.filtered(lambda m: m.state == 'confirmed')" t-as="movement">
+                                    <tr>
+                                        <td><span t-field="movement.date" t-options='{"widget": "datetime"}'/></td>
+                                        <td><span t-field="movement.movement_type"/></td>
+                                        <td><span t-field="movement.description"/></td>
+                                        <td class="text-end">
+                                            <span t-if="movement.amount > 0" class="text-danger">
+                                                +<span t-field="movement.amount" 
+                                                      t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                            </span>
+                                            <span t-if="movement.amount &lt; 0" class="text-success">
+                                                <span t-field="movement.amount" 
+                                                      t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Notas -->
+                    <div class="mt-4" t-if="order.note">
+                        <strong>Notas:</strong>
+                        <p><span t-field="order.note"/></p>
+                    </div>
+                    
+                    <div class="oe_structure"/>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <!-- Definición del Reporte -->
+    <record id="action_report_pos_order_credit" model="ir.actions.report">
+        <field name="name">Orden con Saldo CC</field>
+        <field name="model">pos.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pos_customer_credit.report_pos_order_credit_document</field>
+        <field name="report_file">pos_customer_credit.report_pos_order_credit_document</field>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

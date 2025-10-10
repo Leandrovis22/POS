@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_customer_credit.CustomerCreditButton">
+        <div class="customer-credit-button" t-if="isVisible">
+            <button class="btn btn-lg btn-light h-100 d-flex flex-column justify-content-center align-items-center"
+                    t-on-click="onClick">
+                <i class="fa fa-credit-card fa-2x mb-2"/>
+                <div class="credit-info">
+                    <div class="small">Cuenta Corriente</div>
+                    <div t-att-class="'fw-bold ' + balanceClass">
+                        <t t-esc="pos.env.utils.formatCurrency(Math.abs(creditBalance))"/>
+                    </div>
+                    <div class="very-small" t-att-class="balanceClass">
+                        <t t-esc="balanceLabel"/>
+                    </div>
+                </div>
+            </button>
+            <button class="btn btn-sm btn-secondary mt-1 w-100"
+                    t-on-click="openBackendView">
+                <i class="fa fa-external-link"/> Controlar CC Cliente
+            </button>
+        </div>
+    </t>
+</templates>

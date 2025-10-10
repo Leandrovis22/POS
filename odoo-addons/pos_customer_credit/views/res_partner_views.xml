@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario de Res Partner con CC -->
+    <record id="view_partner_form_credit" model="ir.ui.view">
+        <field name="name">res.partner.form.credit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar notebook page de cuenta corriente -->
+            <xpath expr="//notebook" position="inside">
+                <page name="customer_credit" string="Cuenta Corriente">
+                    <group>
+                        <group>
+                            <field name="credit_balance" widget="monetary"/>
+                            <field name="pending_credit_amount" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="total_credit_orders"/>
+                            <button name="action_register_payment" 
+                                    string="Registrar Pago" 
+                                    type="object"
+                                    class="oe_highlight"
+                                    invisible="credit_balance &lt;= 0"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Acciones Rápidas">
+                        <button name="action_view_credit_orders" 
+                                string="Ver Órdenes a Crédito" 
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-shopping-cart"/>
+                        <button name="action_view_credit_movements" 
+                                string="Ver Todos los Movimientos" 
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-list"/>
+                    </group>
+                    
+                    <separator string="Últimos Movimientos"/>
+                    <field name="credit_movement_ids" 
+                           context="{'default_partner_id': active_id}"
+                           domain="[('state', '=', 'confirmed')]">
+                        <tree decoration-success="amount &lt; 0" decoration-danger="amount &gt; 0">
+                            <field name="date"/>
+                            <field name="movement_type"/>
+                            <field name="order_id"/>
+                            <field name="description"/>
+                            <field name="amount" widget="monetary"/>
+                            <field name="state" widget="badge" 
+                                   decoration-success="state == 'confirmed'"
+                                   decoration-muted="state == 'cancelled'"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            
+            <!-- Agregar stat button en el header -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_credit_orders" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-credit-card"
+                        invisible="total_credit_orders == 0">
+                    <field name="total_credit_orders" widget="statinfo" string="Órdenes CC"/>
+                </button>
+                <button name="action_view_credit_movements" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-exchange"
+                        invisible="credit_balance == 0">
+                    <div class="o_stat_info">
+                        <field name="credit_balance" widget="monetary" class="o_stat_value"/>
+                        <span class="o_stat_text">Saldo CC</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>
