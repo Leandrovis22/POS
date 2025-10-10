@@ -75,6 +75,7 @@ class PosOrder(models.Model):
     invoice_outdated = fields.Boolean(
         string='Factura Desactualizada',
         compute='_compute_invoice_outdated',
+        store=True,
         help='La factura está desactualizada respecto a la orden'
     )
 

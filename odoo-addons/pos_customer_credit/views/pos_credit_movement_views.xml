@@ -48,10 +48,6 @@
                         </group>
                     </group>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="message_ids"/>
-                </div>
             </form>
         </field>
     </record>
@@ -61,7 +57,7 @@
         <field name="name">pos.credit.movement.tree</field>
         <field name="model">pos.credit.movement</field>
         <field name="arch" type="xml">
-            <tree decoration-success="amount &lt; 0" 
+            <list decoration-success="amount &lt; 0" 
                   decoration-danger="amount &gt; 0"
                   decoration-muted="state == 'cancelled'">
                 <field name="date"/>
@@ -76,7 +72,7 @@
                        decoration-info="state == 'draft'"
                        decoration-muted="state == 'cancelled'"/>
                 <field name="user_id" optional="hide"/>
-            </tree>
+            </list>
         </field>
     </record>
     

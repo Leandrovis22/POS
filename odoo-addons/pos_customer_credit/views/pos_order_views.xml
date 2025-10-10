@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Vista Tree para Movimientos de Crédito (para usar en pos.order) -->
+    <record id="view_pos_credit_movement_tree_order" model="ir.ui.view">
+        <field name="name">pos.credit.movement.tree.order</field>
+        <field name="model">pos.credit.movement</field>
+        <field name="arch" type="xml">
+            <list decoration-success="amount &lt; 0" decoration-danger="amount &gt; 0">
+                <field name="date"/>
+                <field name="movement_type"/>
+                <field name="description"/>
+                <field name="amount" widget="monetary" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'confirmed'"
+                       decoration-info="state == 'draft'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+
     <!-- Vista de Formulario de POS Order extendida -->
     <record id="view_pos_order_form_credit" model="ir.ui.view">
         <field name="name">pos.order.form.credit</field>
@@ -13,12 +33,12 @@
                 <field name="invoice_outdated" invisible="1"/>
                 
                 <field name="credit_amount" widget="monetary" 
-                       invisible="not has_credit_payment"
+                       invisible="has_credit_payment == False"
                        decoration-danger="credit_amount &gt; 0"/>
                 <field name="cash_amount" widget="monetary" 
-                       invisible="not has_credit_payment"/>
+                       invisible="has_credit_payment == False"/>
                 <field name="credit_amount_due" widget="monetary"
-                       invisible="not has_credit_payment"
+                       invisible="has_credit_payment == False"
                        decoration-success="credit_amount_due &lt;= 0"
                        decoration-danger="credit_amount_due &gt; 0"/>
             </xpath>
@@ -26,9 +46,9 @@
             <!-- Agregar información de modificación -->
             <xpath expr="//field[@name='amount_total']" position="before">
                 <field name="original_amount_total" widget="monetary" 
-                       invisible="not is_modified"/>
+                       invisible="is_modified == False"/>
                 <field name="current_products_value" widget="monetary"
-                       invisible="not is_modified"/>
+                       invisible="is_modified == False"/>
             </xpath>
             
             <!-- Botones de acción -->
@@ -37,7 +57,7 @@
                         type="object" 
                         class="oe_stat_button" 
                         icon="fa-exchange"
-                        invisible="not has_credit_payment">
+                        invisible="has_credit_payment == False">
                     <field name="modification_count" widget="statinfo" string="Modificaciones"/>
                 </button>
                 
@@ -46,7 +66,7 @@
                         class="oe_stat_button" 
                         icon="fa-print"
                         string="PDF con Saldo"
-                        invisible="not has_credit_payment"/>
+                        invisible="has_credit_payment == False"/>
                 
                 <button name="action_modify_order" 
                         type="object" 
@@ -59,7 +79,7 @@
             <!-- Alerta de factura desactualizada -->
             <xpath expr="//sheet" position="before">
                 <div class="alert alert-warning" role="alert" 
-                     invisible="not invoice_outdated">
+                     invisible="invoice_outdated == False">
                     <strong>⚠️ Factura Desactualizada:</strong>
                     La orden ha sido modificada después de generar la factura. 
                     Debe cancelar y regenerar la factura desde la orden actual.
@@ -69,7 +89,7 @@
             <!-- Agregar notebook page de movimientos CC -->
             <xpath expr="//page[@name='payments']" position="after">
                 <page name="credit_movements" string="Movimientos CC" 
-                      invisible="not has_credit_payment">
+                      invisible="has_credit_payment == False">
                     <group>
                         <group>
                             <label for="credit_amount_due" string="Saldo de esta Orden"/>
@@ -81,25 +101,8 @@
                         </group>
                     </group>
                     
-                    <field name="credit_movement_ids">
-                        <tree decoration-success="amount &lt; 0" decoration-danger="amount &gt; 0">
-                            <field name="date"/>
-                            <field name="movement_type"/>
-                            <field name="description"/>
-                            <field name="amount" widget="monetary" sum="Total"/>
-                            <field name="state" widget="badge"
-                                   decoration-success="state == 'confirmed'"
-                                   decoration-info="state == 'draft'"
-                                   decoration-muted="state == 'cancelled'"/>
-                            <field name="user_id"/>
-                        </tree>
-                    </field>
+                    <field name="credit_movement_ids"/>
                 </page>
-            </xpath>
-            
-            <!-- Marcar líneas removidas en la vista -->
-            <xpath expr="//field[@name='lines']/tree//field[@name='qty']" position="attributes">
-                <attribute name="decoration-muted">qty &lt;= 0</attribute>
             </xpath>
         </field>
     </record>
@@ -126,7 +129,7 @@
         <field name="model">pos.order</field>
         <field name="inherit_id" ref="point_of_sale.view_pos_order_search"/>
         <field name="arch" type="xml">
-            <xpath expr="//filter[@name='invoiced']" position="after">
+            <search position="inside">
                 <separator/>
                 <filter name="has_credit" string="Con Cuenta Corriente" 
                         domain="[('has_credit_payment', '=', True)]"/>
@@ -136,7 +139,7 @@
                         domain="[('is_modified', '=', True)]"/>
                 <filter name="outdated_invoices" string="Facturas Desactualizadas" 
                         domain="[('invoice_outdated', '=', True)]"/>
-            </xpath>
+            </search>
         </field>
     </record>
 </odoo>

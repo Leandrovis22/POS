@@ -45,7 +45,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <t t-foreach="order.lines.filtered(lambda l: l.qty > 0)" t-as="line">
+                            <t t-foreach="order.lines.filtered(lambda l: l.qty &gt; 0)" t-as="line">
                                 <tr>
                                     <td><span t-field="line.product_id.display_name"/></td>
                                     <td class="text-end"><span t-field="line.qty"/></td>
@@ -92,11 +92,11 @@
                                 <tr t-if="order.has_credit_payment" class="border-top">
                                     <td><strong>Saldo de esta Orden:</strong></td>
                                     <td class="text-end">
-                                        <strong t-if="order.credit_amount_due > 0" class="text-danger">
+                                        <strong t-if="order.credit_amount_due &gt; 0" class="text-danger">
                                             <span t-field="order.credit_amount_due" 
                                                   t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (Debe)
                                         </strong>
-                                        <strong t-if="order.credit_amount_due <= 0" class="text-success">
+                                        <strong t-if="order.credit_amount_due &lt;= 0" class="text-success">
                                             <span t-esc="abs(order.credit_amount_due)" 
                                                   t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (A favor)
                                         </strong>
@@ -105,11 +105,11 @@
                                 <tr t-if="order.has_credit_payment" class="border-top">
                                     <td><strong>Saldo Total del Cliente:</strong></td>
                                     <td class="text-end">
-                                        <strong t-if="order.partner_id.credit_balance > 0" class="text-danger">
+                                        <strong t-if="order.partner_id.credit_balance &gt; 0" class="text-danger">
                                             <span t-field="order.partner_id.credit_balance" 
                                                   t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (Debe)
                                         </strong>
-                                        <strong t-if="order.partner_id.credit_balance <= 0" class="text-success">
+                                        <strong t-if="order.partner_id.credit_balance &lt;= 0" class="text-success">
                                             <span t-esc="abs(order.partner_id.credit_balance)" 
                                                   t-options='{"widget": "monetary", "display_currency": order.currency_id}'/> (A favor)
                                         </strong>
@@ -120,7 +120,7 @@
                     </div>
                     
                     <!-- Historial de Modificaciones -->
-                    <div t-if="order.modification_count > 0" class="mt-4">
+                    <div t-if="order.modification_count &gt; 0" class="mt-4">
                         <h4>Historial de Modificaciones</h4>
                         <table class="table table-sm">
                             <thead>
@@ -138,7 +138,7 @@
                                         <td><span t-field="movement.movement_type"/></td>
                                         <td><span t-field="movement.description"/></td>
                                         <td class="text-end">
-                                            <span t-if="movement.amount > 0" class="text-danger">
+                                            <span t-if="movement.amount &gt; 0" class="text-danger">
                                                 +<span t-field="movement.amount" 
                                                       t-options='{"widget": "monetary", "display_currency": order.currency_id}'/>
                                             </span>

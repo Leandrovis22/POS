@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Vista Tree para Movimientos de Crédito (para usar en res.partner) -->
+    <record id="view_pos_credit_movement_tree_partner" model="ir.ui.view">
+        <field name="name">pos.credit.movement.tree.partner</field>
+        <field name="model">pos.credit.movement</field>
+        <field name="arch" type="xml">
+            <list decoration-success="amount &lt; 0" decoration-danger="amount &gt; 0">
+                <field name="date"/>
+                <field name="movement_type"/>
+                <field name="order_id"/>
+                <field name="description"/>
+                <field name="amount" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'confirmed'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
     <!-- Vista de Formulario de Res Partner con CC -->
     <record id="view_partner_form_credit" model="ir.ui.view">
         <field name="name">res.partner.form.credit</field>
@@ -39,19 +58,8 @@
                     
                     <separator string="Últimos Movimientos"/>
                     <field name="credit_movement_ids" 
-                           context="{'default_partner_id': active_id}"
-                           domain="[('state', '=', 'confirmed')]">
-                        <tree decoration-success="amount &lt; 0" decoration-danger="amount &gt; 0">
-                            <field name="date"/>
-                            <field name="movement_type"/>
-                            <field name="order_id"/>
-                            <field name="description"/>
-                            <field name="amount" widget="monetary"/>
-                            <field name="state" widget="badge" 
-                                   decoration-success="state == 'confirmed'"
-                                   decoration-muted="state == 'cancelled'"/>
-                        </tree>
-                    </field>
+                           context="{'default_partner_id': id}"
+                           domain="[('state', '=', 'confirmed')]"/>
                 </page>
             </xpath>
             
