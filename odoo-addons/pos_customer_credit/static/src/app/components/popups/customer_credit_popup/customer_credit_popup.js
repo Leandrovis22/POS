@@ -1,18 +1,18 @@
 /** @odoo-module */
 
-import { AbstractAwaitablePopup } from "@point_of_sale/app/popup/abstract_awaitable_popup";
 import { Component } from "@odoo/owl";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
+import { Dialog } from "@web/core/dialog/dialog";
 
-export class CustomerCreditPopup extends AbstractAwaitablePopup {
+export class CustomerCreditPopup extends Component {
     static template = "pos_customer_credit.CustomerCreditPopup";
+    static components = { Dialog };
     static props = {
-        ...AbstractAwaitablePopup.props,
         creditInfo: Object,
+        close: Function,
     };
 
     setup() {
-        super.setup();
         this.pos = usePos();
     }
 
@@ -41,11 +41,13 @@ export class CustomerCreditPopup extends AbstractAwaitablePopup {
     }
 
     formatCurrency(amount) {
-        return this.pos.env.utils.formatCurrency(amount);
+        return this.env.utils.formatCurrency(amount);
     }
 
     formatDate(dateStr) {
-        return dateStr;
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString();
     }
 
     getMovementClass(movement) {
@@ -70,22 +72,26 @@ export class CustomerCreditPopup extends AbstractAwaitablePopup {
         if (!orderId) return;
         
         // Cerrar popup y abrir vista de orden en backend
-        this.cancel();
+        this.props.close();
         const url = `/web#id=${orderId}&model=pos.order&view_type=form`;
         window.open(url, '_blank');
     }
 
     async openBackendView() {
         const partnerId = this.creditInfo.partner_id;
-        this.cancel();
+        this.props.close();
         const url = `/web#id=${partnerId}&model=res.partner&view_type=form`;
         window.open(url, '_blank');
     }
 
     async registerPayment() {
-        this.cancel();
+        this.props.close();
         const partnerId = this.creditInfo.partner_id;
         const url = `/web#action=point_of_sale.action_pos_credit_movement&active_id=${partnerId}&model=res.partner`;
         window.open(url, '_blank');
+    }
+
+    cancel() {
+        this.props.close();
     }
 }

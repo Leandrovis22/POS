@@ -2,7 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
-import { CustomerCreditButton } from "../components/customer_credit_button/customer_credit_button";
+import { CustomerCreditButton } from "@pos_customer_credit/app/components/customer_credit_button/customer_credit_button";
 
 // Registrar el componente del botón
 patch(PaymentScreen.prototype, {

@@ -332,7 +332,7 @@ class PosOrder(models.Model):
             'name': f'Movimientos CC - {self.name}',
             'type': 'ir.actions.act_window',
             'res_model': 'pos.credit.movement',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('order_id', '=', self.id)],
             'context': {'default_order_id': self.id}
         }

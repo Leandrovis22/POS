@@ -5,8 +5,6 @@
         <record id="payment_method_customer_credit" model="pos.payment.method">
             <field name="name">Cuenta Corriente</field>
             <field name="is_credit_payment" eval="True"/>
-            <field name="is_cash_count" eval="False"/>
-            <field name="split_transactions" eval="False"/>
         </record>
     </data>
 </odoo>

@@ -37,11 +37,13 @@
         'views/pos_order_views.xml',
         'views/pos_credit_movement_views.xml',
         'views/pos_config_views.xml',
+        'views/pos_payment_method_views.xml',
         'views/menus.xml',
         'report/pos_order_credit_report.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [
+            'pos_customer_credit/static/src/app/app.js',
             'pos_customer_credit/static/src/app/components/customer_credit_button/customer_credit_button.js',
             'pos_customer_credit/static/src/app/components/customer_credit_button/customer_credit_button.xml',
             'pos_customer_credit/static/src/app/components/popups/customer_credit_popup/customer_credit_popup.js',
